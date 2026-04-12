@@ -1,7 +1,6 @@
 from schemas.game import GameCreate, GameResponse
 from models.game import Game
 from core.database import Session
-from sqlalchemy.exc import DataError
 from sqlalchemy import select, update, delete
 
 def create_game(game: GameCreate):
@@ -18,6 +17,7 @@ def read_game(game_id: int):
         if game:
             return GameResponse(id=game.id, name=game.name, description=game.description, 
                                 tag=game.tag, platform=game.platform)
+        raise ValueError
         
 def update_game(game: GameResponse):
     with Session() as session:
@@ -29,9 +29,12 @@ def update_game(game: GameResponse):
             session.commit()
             return GameResponse(id=game.id, name=game.name, 
                 description=game.description, tag=game.tag, platform=game.platform)
+        raise ValueError
         
 def delete_game(game_id: int):
     with Session() as session:
-        session.execute(delete(Game).where(Game.id == game_id))
-        session.commit()
-        return 'Deleted sucessfully.'
+        if session.execute(select(Game.id).where(Game.id == game_id)).scalar_one_or_none():
+            session.execute(delete(Game).where(Game.id == game_id))
+            session.commit()
+            return True
+        raise ValueError

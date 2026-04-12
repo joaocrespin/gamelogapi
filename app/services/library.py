@@ -14,7 +14,9 @@ def create_entry(entry: LibraryEntry, current_user_id):
 def read_entry(entry_id: int):
     with Session() as session:
         entry = session.execute(select(Library).where(Library.id == entry_id)).scalar_one_or_none()
-    return LibraryResponse(id=entry.id, user_id=entry.user_id, game_id=entry.game_id, status=entry.status)
+        if entry:
+            return LibraryResponse(id=entry.id, user_id=entry.user_id, game_id=entry.game_id, status=entry.status)
+        raise ValueError
 
 def update_entry(updated_entry: EntryUpdate):
     with Session() as session:
@@ -25,9 +27,12 @@ def update_entry(updated_entry: EntryUpdate):
             ))
             session.commit()
             return LibraryResponse(id = entry.id, user_id=entry.user_id, game_id=entry.game_id, status=entry.status)
+        raise ValueError
         
 def delete_entry(entry_id: int):
     with Session() as session:
-        session.execute(delete(Library).where(Library.id == entry_id))
-        session.commit()
-        return 'Deleted sucessfully.'
+        if session.execute(select(Library).where(Library.id == entry_id)).scalar_one_or_none():
+            session.execute(delete(Library).where(Library.id == entry_id))
+            session.commit()
+            return True
+        raise ValueError

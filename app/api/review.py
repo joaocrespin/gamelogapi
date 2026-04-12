@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, Response, HTTPException
 from services.review import create_review, read_review, update_review, delete_review
 from schemas.review import ReviewCreate, ReviewUpdate
 from services.user import get_current_user
@@ -17,23 +17,25 @@ async def create(review: ReviewCreate, response: Response, user = Depends(get_cu
 
 @reviews.get('/review/{review_id}')
 def read(review_id: int,  response: Response, user = Depends(get_current_user)):
-    review = read_review(review_id)
-    if review:
+    try:
+        review = read_review(review_id)
         return review
-    
-    response.status_code = 404
-    return 'Review not found.'
+    except ValueError:
+        raise HTTPException(status_code=404, detail='Review not found')
 
 @reviews.put('/review/{review_id}')
 def update(review: ReviewUpdate,  response: Response, user = Depends(get_current_user)):
-    review = update_review(review)
-    if review:
+    try:
+        review = update_review(review)
         return review
+    except ValueError:
+        raise HTTPException(status_code=404, detail='Review not found')
     
-    response.status_code = 404
-    return 'Review not found.'
-
 @reviews.delete('/review/{review_id}')
 def delete(review_id: int,  response: Response, user = Depends(get_current_user)):
-    deleted_review = delete_review(review_id)
-    return deleted_review
+    try:
+        delete_review(review_id)
+        response.status_code = 204
+        return 'Deleted successfully'
+    except ValueError:
+        raise HTTPException(status_code=404, detail='Review not found')

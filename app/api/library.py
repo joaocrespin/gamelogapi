@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, Response, HTTPException
 from services.library import create_entry, read_entry, update_entry, delete_entry
 from schemas.library import LibraryEntry, LibraryResponse, EntryUpdate
 from services.user import get_current_user
@@ -17,11 +17,12 @@ async def create(entry: LibraryEntry, response: Response, user = Depends(get_cur
 
 @libraries.get('/library/{entry_id}')
 def read(entry_id: int, response: Response, user = Depends(get_current_user)):
-    entry = read_entry(entry_id)
-    if entry:
+    try:
+        entry = read_entry(entry_id)
         return entry
-    response.status_code = 404
-    return 'Entry not found.'
+    except ValueError:
+        raise HTTPException(status_code=404, detail='Entry not found')
+   
 
 @libraries.put('/library/{entry_id}')
 def update(entry: EntryUpdate, response: Response, user = Depends(get_current_user)):
@@ -35,8 +36,14 @@ def update(entry: EntryUpdate, response: Response, user = Depends(get_current_us
     except DataError as e:
         response.status_code = 422
         return 'Invalid Status.'
+    except ValueError:
+        raise HTTPException(status_code=404, detail='Entry not found')
     
 @libraries.delete('/library/{entry_id}')
-def delete(entry_id: int, user = Depends(get_current_user)):
-    deleted_entry = delete_entry(entry_id)
-    return deleted_entry
+def delete(entry_id: int, response: Response, user = Depends(get_current_user)):
+    try:
+        delete_entry(entry_id)
+        response.status_code = 204
+        return 'Deleted successfully'
+    except ValueError:
+        raise HTTPException(status_code=404, detail='Entry not found') 
