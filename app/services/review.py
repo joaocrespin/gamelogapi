@@ -21,22 +21,27 @@ def read_review(review_id: int):
         game_id=review.game_id, stars=review.stars, review=review.review)
         raise ValueError
 
-def update_review(updated_review: ReviewUpdate):
+def update_review(updated_review: ReviewUpdate, user_id: int):
     with Session() as session:
         review = session.execute(select(Review).where(Review.id == updated_review.id)).scalar_one_or_none()
         if review:
-            session.execute(update(Review).where(Review.id == review.id).values(
-                stars=updated_review.stars, review=updated_review.review
-            ))
-            session.commit()
-            return ReviewResponse(id=review.id, user_id=review.user_id, game_id=review.game_id,
-                                  stars=review.stars, review=review.review)
+            if review.user_id == user_id:
+                session.execute(update(Review).where(Review.id == review.id).values(
+                    stars=updated_review.stars, review=updated_review.review
+                ))
+                session.commit()
+                return ReviewResponse(id=review.id, user_id=review.user_id, game_id=review.game_id,
+                                    stars=review.stars, review=review.review)
+            raise PermissionError
         raise ValueError
 
-def delete_review(review_id: int):
+def delete_review(review_id: int, user_id: int):
     with Session() as session:
-        if session.execute(select(Review).where(Review.id == review_id)).scalar_one_or_none():
-            session.execute(delete(Review).where(Review.id == review_id))
-            session.commit()
-            return True
+        review = session.execute(select(Review).where(Review.id == review_id)).scalar_one_or_none()
+        if review:
+            if review.user_id == user_id:
+                session.execute(delete(Review).where(Review.id == review_id))
+                session.commit()
+                return True
+            raise PermissionError
         raise ValueError

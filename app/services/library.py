@@ -18,21 +18,26 @@ def read_entry(entry_id: int):
             return LibraryResponse(id=entry.id, user_id=entry.user_id, game_id=entry.game_id, status=entry.status)
         raise ValueError
 
-def update_entry(updated_entry: EntryUpdate):
+def update_entry(updated_entry: EntryUpdate, user_id: int):
     with Session() as session:
         entry = session.execute(select(Library).where(Library.id == updated_entry.id)).scalar_one_or_none()
         if entry:
-            session.execute(update(Library).where(Library.id == entry.id).values(
-                status=updated_entry.status
-            ))
-            session.commit()
-            return LibraryResponse(id = entry.id, user_id=entry.user_id, game_id=entry.game_id, status=entry.status)
+            if entry.user_id == user_id:
+                session.execute(update(Library).where(Library.id == entry.id).values(
+                    status=updated_entry.status
+                ))
+                session.commit()
+                return LibraryResponse(id = entry.id, user_id=entry.user_id, game_id=entry.game_id, status=entry.status)
+            raise PermissionError
         raise ValueError
         
-def delete_entry(entry_id: int):
+def delete_entry(entry_id: int, user_id: int):
     with Session() as session:
-        if session.execute(select(Library).where(Library.id == entry_id)).scalar_one_or_none():
-            session.execute(delete(Library).where(Library.id == entry_id))
-            session.commit()
-            return True
+        entry = session.execute(select(Library).where(Library.id == entry_id)).scalar_one_or_none()
+        if entry:
+            if entry.user_id == user_id:
+                session.execute(delete(Library).where(Library.id == entry_id))
+                session.commit()
+                return True
+            raise PermissionError
         raise ValueError

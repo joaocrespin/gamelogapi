@@ -25,14 +25,14 @@ def test_read_review(mock_session):
 def test_update_review(mock_session):
     review = Review(id=1, user_id=1, game_id=1, stars=5, review='very cool')
     mock_session.return_value.__enter__.return_value.execute.return_value.scalar_one_or_none.return_value = review
-    result = update_review(ReviewUpdate(id=1, stars=1, review='low-key mid'))
+    result = update_review(ReviewUpdate(id=1, stars=1, review='low-key mid'), 1)
     assert result.id == 1
 
 @patch('services.review.Session')
 def test_delete_review(mock_session):
     review = Review(id=1, user_id=1, game_id=1, stars=5, review='very cool')
     mock_session.return_value.__enter__.return_value.execute.return_value.scalar_one_or_none.return_value = review
-    result = delete_review(1)
+    result = delete_review(1, 1)
     assert result == True
 
 @patch('services.review.Session')
@@ -45,10 +45,26 @@ def test_failed_read_review(mock_session):
 def test_failed_update_review(mock_session):
     with raises(ValueError):
         mock_session.return_value.__enter__.return_value.execute.return_value.scalar_one_or_none.return_value = None
-        result = update_review(ReviewUpdate(id=1, stars=1, review='low-key mid'))
+        result = update_review(ReviewUpdate(id=1, stars=1, review='low-key mid'), 1)
 
 @patch('services.review.Session')
 def test_failed_delete_review(mock_session):
     with raises(ValueError):
         mock_session.return_value.__enter__.return_value.execute.return_value.scalar_one_or_none.return_value = None
-        result = delete_review(1)
+        result = delete_review(1, 1)
+
+@patch('services.review.Session')
+def test_permission_update_review(mock_session):
+    review = Review(id=1, user_id=1, game_id=1, stars=5, review='very cool')
+    mock_session.return_value.__enter__.return_value.execute.return_value.scalar_one_or_none.return_value = review
+    with raises(PermissionError):
+     result = update_review(ReviewUpdate(id=1, stars=1, review='low-key mid'), 2)
+   
+
+@patch('services.review.Session')
+def test_permission_delete_review(mock_session):
+    review = Review(id=1, user_id=1, game_id=1, stars=5, review='very cool')
+    mock_session.return_value.__enter__.return_value.execute.return_value.scalar_one_or_none.return_value = review
+    with raises(PermissionError):
+        result = delete_review(1, 2)
+    

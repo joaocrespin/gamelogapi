@@ -25,17 +25,17 @@ def test_read_entry(mock_session):
 
 @patch('services.library.Session')
 def test_update_entry(mock_session):
-    entry = Library(id=1, user_id='1', game_id='1', status='playing')
+    entry = Library(id=1, user_id=1, game_id=1, status='playing')
     mock_session.return_value.__enter__.return_value.execute.return_value.scalar_one_or_none.return_value = entry
-    result = update_entry(EntryUpdate(id=1, status='dropped'))
+    result = update_entry(EntryUpdate(id=1, status='dropped'), 1)
     # Due to mock limitations, it's not possible to update the status of the memory object
     assert result.id == 1
 
 @patch('services.library.Session')
 def test_delete_entry(mock_session):
-    entry = Library(id=1, user_id='1', game_id='1', status='playing')
+    entry = Library(id=1, user_id=1, game_id=1, status='playing')
     mock_session.return_value.__enter__.return_value.execute.return_value.scalar_one_or_none.return_value = entry
-    result = delete_entry(1)
+    result = delete_entry(1, 1)
     assert result == True
 
 @patch('services.library.Session')
@@ -48,10 +48,25 @@ def test_failed_read_entry(mock_session):
 def test_failed_update_entry(mock_session):
     with raises(ValueError):
         mock_session.return_value.__enter__.return_value.execute.return_value.scalar_one_or_none.return_value = None
-        result = update_entry(EntryUpdate(id=2, status='wishlist'))
+        result = update_entry(EntryUpdate(id=2, status='wishlist'), 1)
 
 @patch('services.library.Session')
 def test_failed_delete_entry(mock_session):
     with raises(ValueError):
         mock_session.return_value.__enter__.return_value.execute.return_value.scalar_one_or_none.return_value = None
-        result = delete_entry(2)
+        result = delete_entry(2, 1)
+
+@patch('services.library.Session')
+def test_permission_update_entry(mock_session):
+    entry = Library(id=1, user_id=1, game_id=1, status='playing')
+    mock_session.return_value.__enter__.return_value.execute.return_value.scalar_one_or_none.return_value = entry
+    with raises(PermissionError):
+        result = update_entry(EntryUpdate(id=1, status='dropped'), 2)
+    
+
+@patch('services.library.Session')
+def test_permission_delete_entry(mock_session):
+    entry = Library(id=1, user_id=1, game_id=1, status='playing')
+    mock_session.return_value.__enter__.return_value.execute.return_value.scalar_one_or_none.return_value = entry
+    with raises(PermissionError):
+        result = delete_entry(1, 2)
