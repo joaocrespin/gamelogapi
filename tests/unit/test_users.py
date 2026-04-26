@@ -1,9 +1,10 @@
 from unittest.mock import patch
 from services.user import create_user, login_user
-from schemas.user import UserCreate, userLogin, UserResponse
+from schemas.user import UserCreate, userLogin
 from models.user import User
 from jwt import decode
 from pwdlib import PasswordHash
+from pytest import raises
 
 password_hash = PasswordHash.recommended()
 
@@ -28,6 +29,6 @@ def test_login_user(mock_session):
 
 @patch('services.user.Session')
 def test_failed_login_user(mock_session):
-    mock_session.return_value.__enter__.return_value.execute.return_value.scalar_one_or_none.return_value = None
-    response = login_user(userLogin(email='notauser@test.com', password='pass12word4!'))
-    assert response == False
+    with raises(ValueError):
+        mock_session.return_value.__enter__.return_value.execute.return_value.scalar_one_or_none.return_value = None
+        response = login_user(userLogin(email='notauser@test.com', password='pass12word4!'))

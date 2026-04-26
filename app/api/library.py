@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Response, HTTPException
 from services.library import create_entry, read_entry, update_entry, delete_entry
 from schemas.library import LibraryEntry, LibraryResponse, EntryUpdate
 from services.user import get_current_user
-from sqlalchemy.exc import DataError
+from sqlalchemy.exc import DataError, IntegrityError
 
 libraries = APIRouter()
 
@@ -11,8 +11,9 @@ async def create(entry: LibraryEntry, response: Response, user = Depends(get_cur
     try:
         new_entry = create_entry(entry, user.id)
     except DataError as e:
-        response.status_code = 422
-        return 'Invalid TAG or PLATFORM.'
+        raise HTTPException(status_code=422, detail='Invalid TAG or PLATFORM.')
+    except IntegrityError:
+        raise HTTPException(status_code=422, detail='Game not found.')
     return new_entry
 
 @libraries.get('/library/{entry_id}')

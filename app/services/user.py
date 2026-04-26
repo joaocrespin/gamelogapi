@@ -33,7 +33,7 @@ def login_user(user: userLogin):
             if match:
                 exp = datetime.utcnow() + timedelta(hours=1)
                 return jwt.encode({"exp":exp, "user_id":result.id}, SECRET_KEY, algorithm="HS256")
-    return False
+        raise ValueError
 
 def get_current_user(credentials = Depends(oauth2_scheme)):
     token = credentials.credentials
