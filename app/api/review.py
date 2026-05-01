@@ -12,8 +12,7 @@ async def create(review: ReviewCreate, response: Response, user = Depends(get_cu
         new_review = create_review(review, user.id)
         return new_review
     except IntegrityError:
-        response.status_code = 404
-        return 'Game not found!'
+        raise HTTPException(status_code=404, detail='Game not found or already reviewed.')
 
 @reviews.get('/review/{review_id}')
 def read(review_id: int,  response: Response, user = Depends(get_current_user)):

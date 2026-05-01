@@ -13,7 +13,7 @@ async def create(entry: LibraryEntry, response: Response, user = Depends(get_cur
     except DataError as e:
         raise HTTPException(status_code=422, detail='Invalid TAG or PLATFORM.')
     except IntegrityError:
-        raise HTTPException(status_code=422, detail='Game not found.')
+        raise HTTPException(status_code=422, detail='Game not found or already in your library.')
     return new_entry
 
 @libraries.get('/library/{entry_id}')

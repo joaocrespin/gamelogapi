@@ -1,6 +1,6 @@
 from core.database import Base
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import ForeignKey, String, UniqueConstraint
 
 class Review(Base):
     __tablename__='reviews'
@@ -9,3 +9,4 @@ class Review(Base):
     game_id: Mapped[int] = mapped_column(ForeignKey('games.id'))
     stars: Mapped[int] = mapped_column()
     review: Mapped[str] = mapped_column(String)
+    __table_args__ = (UniqueConstraint('user_id', 'game_id', name='UUSERGAMEREVIEW'),)
