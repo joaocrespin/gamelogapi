@@ -1,6 +1,6 @@
 from unittest.mock import patch
 from schemas.game import GameCreate, GameResponse
-from services.game import create_game, read_game, update_game, delete_game
+from services.game import create_game, read_game, update_game, delete_game, search_game
 from models.game import Game
 from pytest import raises
 
@@ -38,6 +38,20 @@ def test_delete_game(mock_session):
     assert result == True
 
 @patch('services.game.Session')
+def test_search_game_name(mock_session):
+    game = Game(id=1, name='Action Game', description='fast paced', tag='ACTION', platform='xbox')
+    mock_session.return_value.__enter__.return_value.execute.return_value.scalars.return_value.all.return_value = [game]
+    result = search_game(name = 'ac')
+    assert result[0].name == 'Action Game'
+
+@patch('services.game.Session')
+def test_search_game_tag_platform(mock_session):
+    game = Game(id=1, name='Action Game', description='fast paced', tag='ACTION', platform='xbox')
+    mock_session.return_value.__enter__.return_value.execute.return_value.scalars.return_value.all.return_value = [game]
+    result = search_game(platform = 'xbox', tag='action')
+    assert result[0].name == 'Action Game'
+
+@patch('services.game.Session')
 def test_failed_read_game(mock_session):
     with raises(ValueError):
         mock_session.return_value.__enter__.return_value.execute.return_value.scalar_one_or_none.return_value = None
@@ -54,3 +68,9 @@ def test_failed_delete_game(mock_session):
     with raises(ValueError):
         mock_session.return_value.__enter__.return_value.execute.return_value.scalar_one_or_none.return_value = None
         result = delete_game(1)
+
+@patch('services.game.Session')
+def test_failed_search_game(mock_session):
+    with raises(ValueError):
+        mock_session.return_value.__enter__.return_value.execute.return_value.scalars.return_value.all.return_value = []
+        result = search_game(name = 'ac')

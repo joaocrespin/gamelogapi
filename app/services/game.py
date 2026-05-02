@@ -1,7 +1,7 @@
 from schemas.game import GameCreate, GameResponse
-from models.game import Game
+from models.game import Game, Tags, Platforms
 from core.database import Session
-from sqlalchemy import select, update, delete
+from sqlalchemy import select, update, delete, func
 
 def create_game(game: GameCreate):
     with Session() as session:
@@ -37,4 +37,28 @@ def delete_game(game_id: int):
             session.execute(delete(Game).where(Game.id == game_id))
             session.commit()
             return True
+        raise ValueError
+    
+def search_game(name: str = None, platform: Platforms = None, tag: Tags = None):
+    with Session() as session:
+        if platform is None and tag is None:
+            game = session.execute(select(Game).where(func.lower(Game.name).like(f'{name}%'))).scalars().all()
+        elif name is None and tag is None:
+            game = session.execute(select(Game).where(Game.platform == platform)).scalars().all()
+        elif name is None and platform is None:
+            game = session.execute(select(Game).where(Game.tag == tag)).scalars().all()
+        elif tag is None:
+            game = session.execute(select(Game).where(func.lower(Game.name).like(f'{name}%')
+                , Game.platform == platform)).scalars().all()
+        elif platform is None:
+            game = session.execute(select(Game).where(func.lower(Game.name).like(f'{name}%')
+                , Game.tag == tag)).scalars().all()
+        elif name is None:
+            game = session.execute(select(Game).where(Game.platform == platform
+                , Game.tag == tag)).scalars().all()
+        else: 
+            game = session.execute(select(Game).where(func.lower(Game.name).like(f'{name}%')
+                    , Game.platform == platform, Game.tag == tag)).scalars().all()
+        if game:
+            return game
         raise ValueError

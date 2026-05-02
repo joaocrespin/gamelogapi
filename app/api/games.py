@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, status, Response, HTTPException
-from services.game import create_game, read_game, update_game, delete_game
+from services.game import create_game, read_game, update_game, delete_game, search_game
 from schemas.game import GameCreate, GameResponse
-from models.game import Game
+from models.game import Platforms, Tags
 from sqlalchemy.exc import DataError
 from services.user import get_current_user
 
@@ -44,3 +44,10 @@ def delete(game_id: int, response: Response, user = Depends(get_current_user)):
         return 'Deleted successfully'
     except ValueError:
         raise HTTPException(status_code=404, detail='Game not found')
+    
+@games.get('/games/')
+def search(name: str = None, platform: Platforms = None, tag: Tags = None):
+    try:
+        return search_game(name.lower() if name else None, platform, tag)
+    except ValueError:
+        raise HTTPException(status_code=404, detail='Game(s) not found')
