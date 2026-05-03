@@ -14,10 +14,18 @@ class UserResponse(BaseModel):
     created_at: datetime
 
 
-class userLogin(BaseModel):
+class UserLogin(BaseModel):
     email: str
     password: str
 
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+class UserStatus(BaseModel):
+    name: str
+    games_reviewed: int
+    games_played: int
+    games_wishlisted: int
+    games_playing: int
+    days_since_creation: int
