@@ -11,6 +11,18 @@ services:
       POSTGRES_PASSWORD: "YourPW"
     ports:
       - "5432:5432"
+  
+  cache:
+    image: redis:7-alpine
+    restart: always
+    volumes:
+      - cache:/data
+    ports: 
+      - "6379:6379"
+    command: redis-server --save 10 1 --loglevel warning --requirepass YourPW
+
 
 volumes:
   data:
+  cache:
+    driver: local
