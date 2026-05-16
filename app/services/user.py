@@ -4,14 +4,14 @@ from models.user import User
 from datetime import datetime, timedelta
 from pwdlib import PasswordHash
 from sqlalchemy import select, func
-from env import SECRET_KEY
+import os
 import jwt
 from fastapi.security import HTTPBearer
 from fastapi import Depends
 from models.review import Review
 from models.library import Library
 
-
+SECRET_KEY = os.environ.get('SECRET_KEY', 'sechrefd')
 password_hash = PasswordHash.recommended()
 oauth2_scheme = HTTPBearer()
 

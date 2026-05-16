@@ -7,7 +7,10 @@ from alembic import context
 
 from models import user, game, library, review
 from core.database import Base
-import env
+import os
+host = os.environ.get('POSTGRES_HOST', 'localhost')
+password = os.environ.get('POSTGRES_PASSWORD', 'YourPW')
+
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -29,7 +32,7 @@ target_metadata = Base.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
-config.set_main_option("sqlalchemy.url", f"postgresql://{env.POSTGRES_NAME}:{env.POSTGRES_PASSWORD}@localhost:5432/postgres")
+config.set_main_option("sqlalchemy.url", f"postgresql://postgres:{password}@{host}:5432/postgres")
 
 
 def run_migrations_offline() -> None:

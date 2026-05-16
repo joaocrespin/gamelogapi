@@ -1,5 +1,7 @@
 from redis import Redis
-import env
+import os
 
-rconn = Redis(host='localhost', port=6379, decode_responses=True, password=env.REDIS_PASSWORD)
+host = os.environ.get('REDIS_HOST', 'localhost')
+password = os.environ.get('REDIS_PASSWORD', 'YourPW')
 
+rconn = Redis(host=host, port=6379, decode_responses=True, password=password)

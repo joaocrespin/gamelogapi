@@ -21,6 +21,20 @@ services:
       - "6379:6379"
     command: redis-server --save 10 1 --loglevel warning --requirepass YourPW
 
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_PASSWORD=YourPW
+      - REDIS_HOST=cache
+      - REDIS_PASSWORD=YourPW
+      - SECRET_KEY=sechrefd
+    depends_on:
+      - db
+      - cache
+
 
 volumes:
   data:
