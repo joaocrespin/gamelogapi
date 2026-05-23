@@ -41,24 +41,14 @@ def delete_game(game_id: int):
     
 def search_game(name: str = None, platform: Platforms = None, tag: Tags = None):
     with Session() as session:
-        if platform is None and tag is None:
-            game = session.execute(select(Game).where(func.lower(Game.name).like(f'{name}%'))).scalars().all()
-        elif name is None and tag is None:
-            game = session.execute(select(Game).where(Game.platform == platform)).scalars().all()
-        elif name is None and platform is None:
-            game = session.execute(select(Game).where(Game.tag == tag)).scalars().all()
-        elif tag is None:
-            game = session.execute(select(Game).where(func.lower(Game.name).like(f'{name}%')
-                , Game.platform == platform)).scalars().all()
-        elif platform is None:
-            game = session.execute(select(Game).where(func.lower(Game.name).like(f'{name}%')
-                , Game.tag == tag)).scalars().all()
-        elif name is None:
-            game = session.execute(select(Game).where(Game.platform == platform
-                , Game.tag == tag)).scalars().all()
-        else: 
-            game = session.execute(select(Game).where(func.lower(Game.name).like(f'{name}%')
-                    , Game.platform == platform, Game.tag == tag)).scalars().all()
-        if game:
-            return game
+        filters = []
+        if name:
+            filters.append(func.lower(Game.name).like(f'{name.lower()}%'))
+        if platform:
+            filters.append(Game.platform == platform)
+        if tag:
+            filters.append(Game.tag == tag)
+        games = session.execute(select(Game).where(*filters)).scalars().all()
+        if games:
+            return games
         raise ValueError
