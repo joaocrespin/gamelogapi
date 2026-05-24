@@ -12,7 +12,7 @@ async def register(user: UserCreate):
       new_user = create_user(user)
       return new_user
    except IntegrityError:
-         raise HTTPException(status_code=409, detail='Username already in use.')
+         raise HTTPException(status_code=409, detail='Username or email already in use.')
 
 @users.post('/user/login')
 async def login(user: UserLogin):
