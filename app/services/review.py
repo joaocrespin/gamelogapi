@@ -1,12 +1,22 @@
 from schemas.review import ReviewCreate, ReviewResponse, ReviewUpdate
 from models.review import Review
+from models.library import Library
 from core.database import Session
 from sqlalchemy import select, update, delete
 
 def create_review(review: ReviewCreate, user_id: int):
     with Session() as session:
+        library_entry = session.execute(select(Library).where(
+            Library.game_id == review.game_id,
+            Library.user_id == user_id
+        )).scalar_one_or_none()
+
+        if not library_entry:
+            raise ValueError
+
         new_review = Review(user_id=user_id, game_id=review.game_id,
             stars=review.stars, review=review.review)
+        
         session.add(new_review)
         session.commit()
         session.refresh(new_review)

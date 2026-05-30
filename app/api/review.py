@@ -13,6 +13,8 @@ async def create(review: ReviewCreate, response: Response, user = Depends(get_cu
         return new_review
     except IntegrityError:
         raise HTTPException(status_code=404, detail='Game not found or already reviewed.')
+    except ValueError:
+        raise HTTPException(status_code=404, detail='Game should be played before review.')
 
 @reviews.get('/review/{review_id}')
 def read(review_id: int,  response: Response, user = Depends(get_current_user)):
